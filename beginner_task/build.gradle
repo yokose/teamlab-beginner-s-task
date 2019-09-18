@@ -26,4 +26,8 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'mysql:mysql-connector-java'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	compile('mysql:mysql-connector-java')
+	compile('org.springframework.boot:spring-boot-starter-data-rest')
+	runtime('org.springframework.boot:spring-boot-devtools')
 }
