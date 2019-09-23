@@ -1,14 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Hello Page</title>
+    <meta charset="UTF-8"/>
+    <title>Insert title here</title>
 </head>
 <body>
-<form method="post" action="/result">
-    名前を入力してください<br>
-    <input type="text" name="inputvalue"/>
-    <input type="submit" value="送信" />
+<h2>Todo app</h2>
+
+<a th:unless="${todoItemForm.done}" th:href="@{/?isDone=true}">完了したアイテムの表示</a>
+<a th:if="${todoItemForm.done}" th:href="@{/?isDone=false}">TODOの表示</a>
+
+<hr />
+
+<h3>TODOの追加</h3>
+<form method="post" th:action="@{/new}">
+    <input type="text" name="title" />
+    <input type="submit" value="追加" />
 </form>
+
+<h3>TODOリスト</h3>
+<table>
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="todoItem : ${todoItemForm.todoItems}">
+        <td th:text="${todoItem.title}">xxx</td>
+        <td>
+            <form th:unless="${todoItemForm.done}" method="post" th:action="@{/done}" th:object="${todoItem}">
+                <input type="hidden" name="id" th:value="*{id}" />
+                <input type="submit" value="Done" />
+            </form>
+            <form th:if="${todoItemForm.done}" method="post" th:action="@{/restore}" th:object="${todoItem}">
+                <input type="hidden" name="id" th:value="*{id}" />
+                <input type="submit" value="Restore" />
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
 </body>
 </html>
