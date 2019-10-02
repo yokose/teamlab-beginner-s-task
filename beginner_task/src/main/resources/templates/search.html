@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Insert title here</title>
+    <style>
+    .right_box {
+    height: 50px;              /* 高さ指定 */
+    width: 50%;               /* 幅指定 */
+    background-color: #2196F3;     /* 背景色指定 */
+    float:right;
+    }
+    .left_box{
+    height: 50px;              /* 高さ指定 */
+    width: 100%;
+    background-color: #2196F3;  /* 背景色指定 */
+    float:left
+    }
+    </style>
+</head>
+<body>
+<div class = "left_box">
+    <p style="text-align: left;">
+        <a th:href="@{/}">
+            <font size="5">TODOリスト</font>
+        </a>
+    </p>
+</div>
+<br>
+<br>
+<hr />
+
+<form method="post" th:action="@{/new}">
+    <input type="text" name="title" />
+    <input type="submit" value="検索" />
+</form>
+
+</body>
+</html>

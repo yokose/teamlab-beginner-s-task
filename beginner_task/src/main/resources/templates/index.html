@@ -3,9 +3,45 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Insert title here</title>
+    <style>
+    .right_box {
+    height: 50px;              /* 高さ指定 */
+    width: 50%;               /* 幅指定 */
+    background-color: #2196F3;     /* 背景色指定 */
+    float:right;
+    }
+    .left_box{
+    height: 50px;              /* 高さ指定 */
+    width: 50%;
+    background-color: #2196F3;  /* 背景色指定 */
+    float:left
+    }
+    tod_box{
+    height: 50px;
+    width: 80%;
+    background-color: #2196F3;
+    float:center;
+    }
+    </style>
 </head>
 <body>
-<h2>Todo app</h2>
+<div class = "right_box">
+    <p style="text-align: right;">
+        <a th:href="@{/search}">
+            <font size="5">検索</font>
+        </a>
+    </p>
+</div>
+<div class = "left_box">
+    <p style="text-align: left;">
+        <a th:href="@{/}">
+            <font size="5">TODOリスト</font>
+        </a>
+    </p>
+</div>
+<br>
+<br>
+<hr />
 
 <a th:unless="${todoItemForm.done}" th:href="@{/?isDone=true}">完了したアイテムの表示</a>
 <a th:if="${todoItemForm.done}" th:href="@{/?isDone=false}">TODOの表示</a>
@@ -14,9 +50,28 @@
 
 <h3>TODOの追加</h3>
 <form method="post" th:action="@{/new}">
+    <P>todo名</P>
     <input type="text" name="title" />
+    <p>期限</p>
+    <input type="text" name="deadline" />
     <input type="submit" value="追加" />
 </form>
+<table>
+    <tbody>
+    <tr th:each="todoItem : ${todoItemForm.todoItems}">
+        <td>
+            <p><a th:text="${todoItem.title}">xxx</a></p>
+            <p><a th:text="${todoItem.deadline}">xxx</a></p>
+            <p><a th:text="${todoItem.create_day}">xxx</a></p>
+        </td>
+        <td>
+
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+
 
 <h3>TODOリスト</h3>
 <table>
@@ -30,6 +85,8 @@
     <tbody>
     <tr th:each="todoItem : ${todoItemForm.todoItems}">
         <td th:text="${todoItem.title}">xxx</td>
+        <td th:text="${todoItem.deadline}">xxx</td>
+        <td th:text="${todoItem.create_day}">xxx</td>
         <td>
             <form th:unless="${todoItemForm.done}" method="post" th:action="@{/done}" th:object="${todoItem}">
                 <input type="hidden" name="id" th:value="*{id}" />

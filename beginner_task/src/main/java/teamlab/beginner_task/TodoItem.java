@@ -16,6 +16,8 @@ public class TodoItem {
     private Long id;
     private String title;
     private Boolean done;
+    private String deadline;
+    private String create_day;
 
     public Long getId() {
         return id;
@@ -41,4 +43,19 @@ public class TodoItem {
         this.done = done;
     }
 
+    public String getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(String deadline) {
+        this.deadline = deadline;
+    }
+
+    public String getCreate_day() {
+        return create_day;
+    }
+
+    public void setCreate_day(String create_day) {
+        this.create_day = create_day;
+    }
 }

@@ -21,8 +21,6 @@ public class TodoItemForm {
         return isDone;
     }
 
-    public void setDone(boolean isDone) {
-        this.isDone = isDone;
-    }
+    public void setDone(boolean isDone) { this.isDone = isDone; }
 
 }
