@@ -8,4 +8,5 @@ import teamlab.beginner_task.TodoItem;
 
 public interface TodoItemRepository extends JpaRepository<TodoItem, Long> {
     public List<TodoItem> findByDoneOrderByTitleAsc(boolean done);
+    public List<TodoItem> findByTitleLikeAndDoneFalseOrderByTitleAsc(String title);
 }

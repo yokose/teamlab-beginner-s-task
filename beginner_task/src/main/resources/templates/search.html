@@ -30,10 +30,47 @@
 <br>
 <hr />
 
-<form method="post" th:action="@{/new}">
-    <input type="text" name="title" />
+<form method="post" th:action="@{/find}">
+    <input type="text" name="title" th:value="${value}"/>
     <input type="submit" value="検索" />
 </form>
+<hr/>
+<div th:if="${DoneSearch}">
+    <div th:if="${#lists.isEmpty(datalist)}">
+        <p><a>対象のToDoは見つかりません</a></p>
+    </div>
+    <div th:unless="${#lists.isEmpty(datalist)}">
+        <p><a>todoが</a><a th:text="${numberOfdata}"></a><a>件見つかりました</a></p>
+    </div>
+</div>
+
+<table border="1">
+    <tbody>
+    <tr th:each="todoItem : ${datalist}">
+        <td>
+            <p><a th:text="${todoItem.title}">xxx</a></p>
+            <p><a>期限:</a><a th:text="${todoItem.deadline}">xxx</a></p>
+            <p><a>作成日:</a><a th:text="${todoItem.create_day}">xxx</a></p>
+        </td>
+        <td>
+            <form method="post" th:action="@{/edit}" th:object="${todoItem}">
+                <input type="hidden" name="id" th:value="*{id}" />
+                <input type="submit" value="編集" />
+            </form>
+        </td>
+        <td>
+            <form th:unless="${todoItem.done}" method="post" th:action="@{/done}" th:object="${todoItem}">
+                <input type="hidden" name="id" th:value="*{id}" />
+                <input type="submit" value="完了" />
+            </form>
+            <form th:if="${todoItem.done}" method="post" th:action="@{/restore}" th:object="${todoItem}">
+                <input type="hidden" name="id" th:value="*{id}" />
+                <input type="submit" value="未完了" />
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
 
 </body>
 </html>

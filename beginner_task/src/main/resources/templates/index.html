@@ -41,64 +41,43 @@
 </div>
 <br>
 <br>
-<hr />
-
-<a th:unless="${todoItemForm.done}" th:href="@{/?isDone=true}">完了したアイテムの表示</a>
-<a th:if="${todoItemForm.done}" th:href="@{/?isDone=false}">TODOの表示</a>
 
 <hr />
 
-<h3>TODOの追加</h3>
 <form method="post" th:action="@{/new}">
-    <P>todo名</P>
-    <input type="text" name="title" />
-    <p>期限</p>
-    <input type="text" name="deadline" />
+    新しいtodoを作成する<br>
+    todo名<input type="text" name="title" /><br>
+    期限 <input type="text" name="deadline" />
     <input type="submit" value="追加" />
 </form>
-<table>
+
+<table border="1">
     <tbody>
     <tr th:each="todoItem : ${todoItemForm.todoItems}">
         <td>
             <p><a th:text="${todoItem.title}">xxx</a></p>
-            <p><a th:text="${todoItem.deadline}">xxx</a></p>
-            <p><a th:text="${todoItem.create_day}">xxx</a></p>
+            <p><a>期限:</a><a th:text="${todoItem.deadline}">xxx</a></p>
+            <p><a>作成日:</a><a th:text="${todoItem.create_day}">xxx</a></p>
         </td>
         <td>
-
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-
-
-<h3>TODOリスト</h3>
-<table>
-    <thead>
-    <tr>
-        <th>Title</th>
-        <th></th>
-    </tr>
-    </thead>
-
-    <tbody>
-    <tr th:each="todoItem : ${todoItemForm.todoItems}">
-        <td th:text="${todoItem.title}">xxx</td>
-        <td th:text="${todoItem.deadline}">xxx</td>
-        <td th:text="${todoItem.create_day}">xxx</td>
-        <td>
-            <form th:unless="${todoItemForm.done}" method="post" th:action="@{/done}" th:object="${todoItem}">
+            <form method="post" th:action="@{/edit}" th:object="${todoItem}">
                 <input type="hidden" name="id" th:value="*{id}" />
-                <input type="submit" value="Done" />
+                <input type="submit" value="編集" />
             </form>
-            <form th:if="${todoItemForm.done}" method="post" th:action="@{/restore}" th:object="${todoItem}">
+        </td>
+        <td>
+            <form th:unless="${todoItem.done}" method="post" th:action="@{/done}" th:object="${todoItem}">
                 <input type="hidden" name="id" th:value="*{id}" />
-                <input type="submit" value="Restore" />
+                <input type="submit" value="完了" />
+            </form>
+            <form th:if="${todoItem.done}" method="post" th:action="@{/restore}" th:object="${todoItem}">
+                <input type="hidden" name="id" th:value="*{id}" />
+                <input type="submit" value="未完了" />
             </form>
         </td>
     </tr>
     </tbody>
 </table>
+
 </body>
 </html>
