@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,10 @@ public class HomeController {
     @RequestMapping
     public String index(@ModelAttribute TodoItemForm todoItemForm) {
         todoItemForm.setTodoItems(this.repository.findAll());
+        todoItemForm.setExistTodo(true);
+
+        List todoItems = todoItemForm.getTodoItems();
+        if(todoItems.size()==0){todoItemForm.setExistTodo(false);}
         return "index";
     }
 
@@ -44,7 +49,7 @@ public class HomeController {
         TodoItem item = this.repository.findById(id).get();
         item.setDone(true);
         this.repository.save(item);
-        return "redirect:/?isDone=false";
+        return "redirect:/";
     }
 
     @RequestMapping(value = "/restore", method = RequestMethod.POST)
@@ -52,11 +57,18 @@ public class HomeController {
         TodoItem item = this.repository.findById(id).get();
         item.setDone(false);
         this.repository.save(item);
-        return "redirect:/?isDone=true";
+        return "redirect:/";
     }
 
     @RequestMapping(value = "/new", method = RequestMethod.POST)
     public String newItem(TodoItem item) {
+        List<TodoItem> checkList = repository.findByTitle(item.getTitle());
+        if(item.getTitle() == "" || item.getDeadline() == "") {
+            return "redirect:/";
+        }else if(!CollectionUtils.isEmpty(checkList)){
+            return "redirect:/";
+        }
+
         item.setDone(false);
 
         Date d = new Date();

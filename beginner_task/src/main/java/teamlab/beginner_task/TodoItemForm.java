@@ -7,6 +7,8 @@ import teamlab.beginner_task.TodoItem;
 public class TodoItemForm {
     private boolean isDone;
 
+    private boolean existTodo;
+
     private List<TodoItem> todoItems;
 
     public List<TodoItem> getTodoItems() {
@@ -25,4 +27,11 @@ public class TodoItemForm {
         this.isDone = isDone;
     }
 
+    public boolean getExistTodo() {
+        return existTodo;
+    }
+
+    public void setExistTodo(boolean existTodo) {
+        this.existTodo = existTodo;
+    }
 }

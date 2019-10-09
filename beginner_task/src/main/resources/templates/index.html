@@ -46,10 +46,15 @@
 
 <form method="post" th:action="@{/new}">
     新しいtodoを作成する<br>
-    todo名<input type="text" name="title" /><br>
-    期限 <input type="text" name="deadline" />
+    todo名<input type="text" name="title" maxlength="30"/><br>
+    期限 <input type="text" name="deadline" maxlength="30"/>
     <input type="submit" value="追加" />
 </form>
+
+
+<div th:unless="${todoItemForm.existTodo}">
+    <p>todoがありません</p>
+</div>
 
 <table border="1">
     <tbody>
