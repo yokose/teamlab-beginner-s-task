@@ -1,6 +1,8 @@
 package teamlab.beginner_task;
 
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +10,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,56 +34,81 @@ import teamlab.beginner_task.TodoItemRepository;
 @Controller
 public class HomeController {
 
-    @Autowired
-    TodoItemRepository repository;
+    private final TodoItemRepository repository;
+    private String errorMessage;
+    public HomeController(TodoItemRepository repository){
+        this.repository  = repository;
+    }
 
     @RequestMapping
     public String index(@ModelAttribute TodoItemForm todoItemForm) {
         todoItemForm.setTodoItems(this.repository.findAll());
         todoItemForm.setExistTodo(true);
+        if(!StringUtils.isEmpty(errorMessage)){
+            todoItemForm.setErrorMessage(errorMessage);
+            errorMessage = null;
+        }
+
 
         List todoItems = todoItemForm.getTodoItems();
-        if(todoItems.size()==0){todoItemForm.setExistTodo(false);}
+        if(todoItems.isEmpty()){todoItemForm.setExistTodo(false);}
         return "index";
     }
 
     @RequestMapping(value = "/done", method = RequestMethod.POST)
     public String done(@RequestParam("id") long id) {
-        TodoItem item = this.repository.findById(id).get();
-        item.setDone(true);
-        this.repository.save(item);
+        //TodoItem item = this.repository.findById(id).get();
+        try{
+            TodoItem item = this.repository.findById(id).orElseThrow(() -> new RuntimeException());
+            item.setDone(!item.getDone());
+            this.repository.save(item);
+        }catch (RuntimeException e){
+            errorMessage = "todoがnullです。";
+        }
         return "redirect:/";
     }
 
-    @RequestMapping(value = "/restore", method = RequestMethod.POST)
-    public String restore(@RequestParam("id") long id) {
-        TodoItem item = this.repository.findById(id).get();
-        item.setDone(false);
-        this.repository.save(item);
-        return "redirect:/";
-    }
+    @RequestMapping(value = "/new")
 
-    @RequestMapping(value = "/new", method = RequestMethod.POST)
-    public String newItem(TodoItem item) {
+    public String newItem(@ModelAttribute TodoItemForm todoItemForm, TodoItem item) {
         List<TodoItem> checkList = repository.findByTitle(item.getTitle());
-        if(item.getTitle() == "" || item.getDeadline() == "") {
+        if(StringUtils.isEmpty(item.getTitle()) || StringUtils.isEmpty(item.getDeadline())) {
+            errorMessage = ("タイトルまたは期限がありません。");
             return "redirect:/";
-        }else if(!CollectionUtils.isEmpty(checkList)){
+        }
+        if(!CollectionUtils.isEmpty(checkList)){
+            errorMessage = ("同じタイトルがあります。");
+            return "redirect:/";
+        }
+        if(item.getTitle().length()>30){
+            errorMessage = "タイトルが長すぎです。";
+            return "redirect:/";
+        }
+        DateFormat checkDay = new SimpleDateFormat("yyyy年MM月dd日");
+        checkDay.setLenient(false);
+        try {
+            checkDay.parse(item.getDeadline());
+        } catch (ParseException e) {
+            // 日付妥当性NG時の処理を記述
+            errorMessage = ("日付が正しくありません。");
             return "redirect:/";
         }
 
+        //Date today = new Date();
+        //SimpleDateFormat d2 = new SimpleDateFormat("yyyy年MM月dd日");
+        //item.setCreate_day(d2.format(today));
+        item.setCreate_day(new Date());
         item.setDone(false);
-
-        Date d = new Date();
-        SimpleDateFormat d2 = new SimpleDateFormat("yyyy年MM月dd日");
-        item.setCreate_day(d2.format(d));
-
         this.repository.save(item);
         return "redirect:/";
     }
 
     @RequestMapping(value = "/search")
-    public String search() {
+    public String search(@ModelAttribute TodoItemForm todoItemForm) {
+        if(!StringUtils.isEmpty(errorMessage)){
+            todoItemForm.setErrorMessage(errorMessage);
+            errorMessage = null;
+        }
         return "search";
     }
 
@@ -91,13 +119,22 @@ public class HomeController {
         int DoneSearch=1;
         mav.addObject("DoneSearch",DoneSearch);
 
-        if(title == "") {
-            mav = new ModelAndView("redirect:search");
-        }else if(title !=""){
-            List<TodoItem> listname = repository.findByTitleLikeAndDoneFalseOrderByTitleAsc("%"+title+"%");
-            mav.addObject("datalist",listname);
-            mav.addObject("numberOfdata", listname.size());
+        if(StringUtils.isEmpty(title)) {
+            errorMessage ="タイトルがありません。";
+            mav.addObject("errorMessage",errorMessage);
+            errorMessage = null;
+            return mav;
         }
+
+        if(title.length()>30){
+            errorMessage = "タイトルが長すぎです。";
+            mav.addObject("errorMessage",errorMessage);
+            return mav;
+        }
+        List<TodoItem> listname = repository.findByTitleLikeAndDoneFalseOrderByTitleAsc("%"+title+"%");
+        mav.addObject("datalist",listname);
+        mav.addObject("numberOfdata", listname.size());
+
         return mav;
     }
 
@@ -105,7 +142,7 @@ public class HomeController {
 
     /**
      * editメソッド
-     * idからt編集するodoItemを探しreturnする
+     * idから編集するtodoItemを探しreturnする
      * @param id
      * @return mav todoItemクラス
      */
@@ -114,6 +151,10 @@ public class HomeController {
         mav.setViewName("edit");
         TodoItem item = this.repository.findById(id).get();
         mav.addObject("editItem",item);
+        if(!StringUtils.isEmpty(errorMessage)){
+            mav.addObject("errorMessage",errorMessage);
+            errorMessage = null;
+        }
         return mav;
     }
 
@@ -124,15 +165,56 @@ public class HomeController {
      * @return redirect:/
      */
     @RequestMapping(value = "/editDone", method = RequestMethod.POST)
-    public String editDone(@RequestParam("id") Long id ,@RequestParam("title") String title,@RequestParam("deadline") String deadline){
+    public String editDone(@ModelAttribute TodoItemForm todoItemForm,@RequestParam("id") Long id ,@RequestParam("title") String title,@RequestParam("deadline") String deadline){
         TodoItem item = this.repository.findById(id).get();
-        if(title == "" && deadline == "") {
+        if(StringUtils.isEmpty(title) && StringUtils.isEmpty(deadline)) {
+            errorMessage = "タイトルまたは期限を記入してください。";
+            return "forward:edit";
+        }else if(!StringUtils.isEmpty(title) && StringUtils.isEmpty(deadline)){
+            List<TodoItem> checkList = repository.findByTitle(title);
+            if(!CollectionUtils.isEmpty(checkList)){
+                errorMessage = ("同じタイトルがあります。");
+                return "forward:edit";
+            }
+            if(title.length()>30){
+                errorMessage = "タイトルが長すぎです。";
+                return "forward:edit";
+            }
 
-        }else if(title != "" && deadline == ""){
             item.setTitle(title);
-        }else if(title == "" && deadline != ""){
+        }else if(StringUtils.isEmpty(title) && !StringUtils.isEmpty(deadline)){
+            DateFormat checkDay = new SimpleDateFormat("yyyy年MM月dd日");
+            checkDay.setLenient(false);
+            try {
+                checkDay.parse(deadline);
+            } catch (ParseException e) {
+                // 日付妥当性NG時の処理を記述
+                errorMessage = ("日付が正しくありません。");
+                return "forward:edit";
+            }
+
             item.setDeadline(deadline);
-        }else if(title != "" && deadline != ""){
+        }else if(!StringUtils.isEmpty(title) && !StringUtils.isEmpty(deadline)){
+            List<TodoItem> checkList = repository.findByTitle(title);
+            if(!CollectionUtils.isEmpty(checkList)){
+                errorMessage = ("同じタイトルがあります。");
+                return "forward:edit";
+            }
+            if(title.length()>30){
+                errorMessage = "タイトルが長すぎです。";
+                return "forward:edit";
+            }
+
+            DateFormat checkDay = new SimpleDateFormat("yyyy年MM月dd日");
+            checkDay.setLenient(false);
+            try {
+                checkDay.parse(deadline);
+            } catch (ParseException e) {
+                // 日付妥当性NG時の処理を記述
+                errorMessage = ("日付が正しくありません。");
+                return "forward:edit";
+            }
+
             item.setTitle(title);
             item.setDeadline(deadline);
         }

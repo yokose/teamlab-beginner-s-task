@@ -46,11 +46,13 @@
 
 <form method="post" th:action="@{/new}">
     新しいtodoを作成する<br>
-    todo名<input type="text" name="title" maxlength="30"/><br>
-    期限 <input type="text" name="deadline" maxlength="30"/>
+    todo名<input type="text" name="title"/><br>
+    期限 <input type="text" name="deadline"/>
     <input type="submit" value="追加" />
 </form>
-
+<font color="red">
+<p th:if="${todoItemForm.errorMessage}" th:text="${todoItemForm.errorMessage}">xxx</p>
+</font>
 
 <div th:unless="${todoItemForm.existTodo}">
     <p>todoがありません</p>
@@ -62,7 +64,7 @@
         <td>
             <p><a th:text="${todoItem.title}">xxx</a></p>
             <p><a>期限:</a><a th:text="${todoItem.deadline}">xxx</a></p>
-            <p><a>作成日:</a><a th:text="${todoItem.create_day}">xxx</a></p>
+            <p><a>作成日:</a><a th:text="${#dates.format(todoItem.create_day,'yyyy年MM月dd日')}">xxx</a></p>
         </td>
         <td>
             <form method="post" th:action="@{/edit}" th:object="${todoItem}">
@@ -75,7 +77,7 @@
                 <input type="hidden" name="id" th:value="*{id}" />
                 <input type="submit" value="完了" />
             </form>
-            <form th:if="${todoItem.done}" method="post" th:action="@{/restore}" th:object="${todoItem}">
+            <form th:if="${todoItem.done}" method="post" th:action="@{/done}" th:object="${todoItem}">
                 <input type="hidden" name="id" th:value="*{id}" />
                 <input type="submit" value="未完了" />
             </form>

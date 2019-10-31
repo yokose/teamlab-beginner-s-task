@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
+import java.util.Date;
 
 @Entity
 @Table(name = "todoitems")
@@ -18,7 +19,7 @@ public class TodoItem {
     private String title;
     private Boolean done;
     private String deadline;
-    private String create_day;
+    private Date create_day;
 
     public Long getId() {
         return id;
@@ -52,11 +53,11 @@ public class TodoItem {
         this.deadline = deadline;
     }
 
-    public String getCreate_day() {
+    public Date getCreate_day() {
         return create_day;
     }
 
-    public void setCreate_day(String create_day) {
+    public void setCreate_day(Date create_day) {
         this.create_day = create_day;
     }
 }

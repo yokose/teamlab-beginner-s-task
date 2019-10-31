@@ -47,12 +47,14 @@
 
 <form method="post" th:action="@{/editDone}" th:object="${editItem}">
     todoの内容を変更します<br>
-    todo名<input type="text" name="title" maxlength="30"/><br>
-    期限 <input type="text" name="deadline" maxlength="30"/>
+    todo名<input type="text" name="title"/><br>
+    期限 <input type="text" name="deadline"/>
     <input type="hidden" name="id" th:value="*{id}" />
     <input type="submit" value="更新" />
 </form>
-
+<font color="red">
+    <p th:if="${errorMessage}" th:text="${errorMessage}">xxx</p>
+</font>
 
 </body>
 </html>

@@ -31,9 +31,12 @@
 <hr />
 
 <form method="post" th:action="@{/find}">
-    <input type="text" name="title" th:value="${value}"　maxlength="30"/>
+    <input type="text" name="title" th:value="${value}"/>
     <input type="submit" value="検索" />
 </form>
+<font color="red">
+    <p th:if="${errorMessage}" th:text="${errorMessage}">xxx</p>
+</font>
 <hr/>
 <div th:if="${DoneSearch}">
     <div th:if="${#lists.isEmpty(datalist)}">
@@ -50,7 +53,7 @@
         <td>
             <p><a th:text="${todoItem.title}">xxx</a></p>
             <p><a>期限:</a><a th:text="${todoItem.deadline}">xxx</a></p>
-            <p><a>作成日:</a><a th:text="${todoItem.create_day}">xxx</a></p>
+            <p><a>作成日:</a><a th:text="${#dates.format(todoItem.create_day,'yyyy年MM月dd日')}">xxx</a></p>
         </td>
         <td>
             <form method="post" th:action="@{/edit}" th:object="${todoItem}">
@@ -63,7 +66,7 @@
                 <input type="hidden" name="id" th:value="*{id}" />
                 <input type="submit" value="完了" />
             </form>
-            <form th:if="${todoItem.done}" method="post" th:action="@{/restore}" th:object="${todoItem}">
+            <form th:if="${todoItem.done}" method="post" th:action="@{/done}" th:object="${todoItem}">
                 <input type="hidden" name="id" th:value="*{id}" />
                 <input type="submit" value="未完了" />
             </form>

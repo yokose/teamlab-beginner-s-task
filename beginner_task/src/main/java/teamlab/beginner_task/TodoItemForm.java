@@ -5,26 +5,16 @@ import java.util.List;
 import teamlab.beginner_task.TodoItem;
 
 public class TodoItemForm {
-    private boolean isDone;
-
     private boolean existTodo;
 
     private List<TodoItem> todoItems;
 
-    public List<TodoItem> getTodoItems() {
-        return todoItems;
-    }
+    private String errorMessage;
+
+    public List<TodoItem> getTodoItems() { return todoItems; }
 
     public void setTodoItems(List<TodoItem> todoItems) {
         this.todoItems = todoItems;
-    }
-
-    public boolean isDone() {
-        return isDone;
-    }
-
-    public void setDone(boolean isDone) {
-        this.isDone = isDone;
     }
 
     public boolean getExistTodo() {
@@ -33,5 +23,13 @@ public class TodoItemForm {
 
     public void setExistTodo(boolean existTodo) {
         this.existTodo = existTodo;
+    }
+
+    public String  getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }
