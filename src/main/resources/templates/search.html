@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Insert title here</title>
+    <style>
+    .right_box {
+    height: 50px;              /* 高さ指定 */
+    width: 50%;               /* 幅指定 */
+    background-color: #2196F3;     /* 背景色指定 */
+    float:right;
+    }
+    .left_box{
+    height: 50px;              /* 高さ指定 */
+    width: 100%;
+    background-color: #2196F3;  /* 背景色指定 */
+    float:left
+    }
+    </style>
+</head>
+<body>
+<div class = "left_box">
+    <p style="text-align: left;">
+        <a th:href="@{/}">
+            <font size="5">TODOリスト</font>
+        </a>
+    </p>
+</div>
+<br>
+<br>
+<hr />
+
+<form method="post" th:action="@{/find}">
+    <input type="text" name="title" th:value="${value}"/>
+    <input type="submit" value="検索" />
+</form>
+<font color="red">
+    <p th:if="${errorMessage}" th:text="${errorMessage}">xxx</p>
+</font>
+<hr/>
+<div th:if="${DoneSearch}">
+    <div th:if="${#lists.isEmpty(datalist)}">
+        <p><a>対象のToDoは見つかりません</a></p>
+    </div>
+    <div th:unless="${#lists.isEmpty(datalist)}">
+        <p><a>todoが</a><a th:text="${numberOfdata}"></a><a>件見つかりました</a></p>
+    </div>
+</div>
+
+<table border="1">
+    <tbody>
+    <tr th:each="todoItem : ${datalist}">
+        <td>
+            <p><a th:text="${todoItem.title}">xxx</a></p>
+            <p><a>期限:</a><a th:text="${todoItem.deadline}">xxx</a></p>
+            <p><a>作成日:</a><a th:text="${#dates.format(todoItem.create_day,'yyyy年MM月dd日')}">xxx</a></p>
+        </td>
+        <td>
+            <form method="post" th:action="@{/edit}" th:object="${todoItem}">
+                <input type="hidden" name="id" th:value="*{id}" />
+                <input type="submit" value="編集" />
+            </form>
+        </td>
+        <td>
+            <form th:unless="${todoItem.done}" method="post" th:action="@{/done}" th:object="${todoItem}">
+                <input type="hidden" name="id" th:value="*{id}" />
+                <input type="submit" value="完了" />
+            </form>
+            <form th:if="${todoItem.done}" method="post" th:action="@{/done}" th:object="${todoItem}">
+                <input type="hidden" name="id" th:value="*{id}" />
+                <input type="submit" value="未完了" />
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
