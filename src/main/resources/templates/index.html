@@ -46,7 +46,10 @@
 
 <form method="post" th:action="@{/new}">
     新しいtodoを作成する<br>
-    todo名<input type="text" name="title"/><br>
+    todo名<input type="text" name="title"/>
+    <!--
+    <span th:errors name="title"> </span><br>
+    -->
     期限 <input type="text" name="deadline"/>
     <input type="submit" value="追加" />
 </form>

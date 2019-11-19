@@ -5,12 +5,16 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Date;
 import java.util.Optional;
 
+import com.sun.tools.javac.comp.Todo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,13 +22,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.springframework.web.servlet.ModelAndView;
-import teamlab.beginner_task.TodoItem;
-import teamlab.beginner_task.TodoItemForm;
-import teamlab.beginner_task.TodoItemRepository;
 
 /**
  * @author kenshin
@@ -36,19 +35,20 @@ public class HomeController {
 
     private final TodoItemRepository repository;
     private String errorMessage;
-    public HomeController(TodoItemRepository repository){
+    private final TodoService todoService;
+    public HomeController(TodoItemRepository repository, TodoService todoService){
         this.repository  = repository;
+        this.todoService = todoService;
     }
+
+
 
     @RequestMapping
     public String index(@ModelAttribute TodoItemForm todoItemForm) {
         todoItemForm.setTodoItems(this.repository.findAll());
         todoItemForm.setExistTodo(true);
-        if(!StringUtils.isEmpty(errorMessage)){
-            todoItemForm.setErrorMessage(errorMessage);
-            errorMessage = null;
-        }
 
+        errorMessage = todoService.errorMessageCheck(errorMessage, todoItemForm);
 
         List todoItems = todoItemForm.getTodoItems();
         if(todoItems.isEmpty()){todoItemForm.setExistTodo(false);}
@@ -57,46 +57,21 @@ public class HomeController {
 
     @RequestMapping(value = "/done", method = RequestMethod.POST)
     public String done(@RequestParam("id") long id) {
-        //TodoItem item = this.repository.findById(id).get();
-        try{
-            TodoItem item = this.repository.findById(id).orElseThrow(() -> new RuntimeException());
-            item.setDone(!item.getDone());
-            this.repository.save(item);
-        }catch (RuntimeException e){
-            errorMessage = "todoがnullです。";
-        }
+        errorMessage = todoService.switchDone(id, errorMessage);
+
         return "redirect:/";
     }
 
     @RequestMapping(value = "/new")
+    public String newItem(@ModelAttribute TodoItemForm todoItemForm, @Validated TodoItem item, BindingResult result) {
+        if(result.hasErrors()){
+            return "redirect:/";
+        }
+       errorMessage = todoService.newTodoCheck(item, errorMessage);
+       if(!StringUtils.isEmpty(errorMessage)){
+           return "redirect:/";
+       }
 
-    public String newItem(@ModelAttribute TodoItemForm todoItemForm, TodoItem item) {
-        List<TodoItem> checkList = repository.findByTitle(item.getTitle());
-        if(StringUtils.isEmpty(item.getTitle()) || StringUtils.isEmpty(item.getDeadline())) {
-            errorMessage = ("タイトルまたは期限がありません。");
-            return "redirect:/";
-        }
-        if(!CollectionUtils.isEmpty(checkList)){
-            errorMessage = ("同じタイトルがあります。");
-            return "redirect:/";
-        }
-        if(item.getTitle().length()>30){
-            errorMessage = "タイトルが長すぎです。";
-            return "redirect:/";
-        }
-        DateFormat checkDay = new SimpleDateFormat("yyyy年MM月dd日");
-        checkDay.setLenient(false);
-        try {
-            checkDay.parse(item.getDeadline());
-        } catch (ParseException e) {
-            // 日付妥当性NG時の処理を記述
-            errorMessage = ("日付が正しくありません。");
-            return "redirect:/";
-        }
-
-        //Date today = new Date();
-        //SimpleDateFormat d2 = new SimpleDateFormat("yyyy年MM月dd日");
-        //item.setCreate_day(d2.format(today));
         item.setCreate_day(new Date());
         item.setDone(false);
         this.repository.save(item);
@@ -105,10 +80,7 @@ public class HomeController {
 
     @RequestMapping(value = "/search")
     public String search(@ModelAttribute TodoItemForm todoItemForm) {
-        if(!StringUtils.isEmpty(errorMessage)){
-            todoItemForm.setErrorMessage(errorMessage);
-            errorMessage = null;
-        }
+        errorMessage = todoService.errorMessageCheck(errorMessage, todoItemForm);
         return "search";
     }
 
