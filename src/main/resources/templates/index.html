@@ -44,13 +44,14 @@
 
 <hr />
 
-<form method="post" th:action="@{/new}">
+
+<form method="post" th:action="@{/new}" th:object="${todoItem}">
     新しいtodoを作成する<br>
     todo名<input type="text" name="title"/>
-    <!--
-    <span th:errors name="title"> </span><br>
-    -->
+    <span class="text-danger" th:if="${#fields.hasErrors('*{title}')}" th:errors="*{title}"></span>
+    <br>
     期限 <input type="text" name="deadline"/>
+    <span class="text-danger" th:if="${#fields.hasErrors('*{deadline}')}" th:errors="*{deadline}"></span>
     <input type="submit" value="追加" />
 </form>
 <font color="red">

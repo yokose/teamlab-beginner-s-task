@@ -41,6 +41,22 @@ public class HomeController {
         this.todoService = todoService;
     }
 
+    @ModelAttribute
+    TodoItem setUpTodoItem() {
+        return new TodoItem();
+    }
+
+    @ModelAttribute
+    TodoItemForm setUpTodoItemForm() {
+        TodoItemForm todoItemForm = new TodoItemForm();
+        todoItemForm.setTodoItems(this.repository.findAll());
+        todoItemForm.setExistTodo(true);
+        List todoItems = todoItemForm.getTodoItems();
+        if(todoItems.isEmpty()){todoItemForm.setExistTodo(false);}
+
+        return todoItemForm;
+    }
+
 
 
     @RequestMapping
@@ -62,10 +78,10 @@ public class HomeController {
         return "redirect:/";
     }
 
-    @RequestMapping(value = "/new")
+    @RequestMapping(value = "/new", method = RequestMethod.POST)
     public String newItem(@ModelAttribute TodoItemForm todoItemForm, @Validated TodoItem item, BindingResult result) {
         if(result.hasErrors()){
-            return "redirect:/";
+            return "index";
         }
        errorMessage = todoService.newTodoCheck(item, errorMessage);
        if(!StringUtils.isEmpty(errorMessage)){
@@ -88,21 +104,16 @@ public class HomeController {
     @Transactional(readOnly=false)
     public ModelAndView search(@RequestParam("title") String title,ModelAndView mav) {
         mav.setViewName("search");
-        int DoneSearch=1;
+        boolean DoneSearch=true;
         mav.addObject("DoneSearch",DoneSearch);
 
-        if(StringUtils.isEmpty(title)) {
-            errorMessage ="タイトルがありません。";
-            mav.addObject("errorMessage",errorMessage);
+        errorMessage = todoService.searchTitleCheck(title);
+        if(!StringUtils.isEmpty(errorMessage)){
+            mav.addObject("errorMessage", errorMessage);
             errorMessage = null;
             return mav;
         }
 
-        if(title.length()>30){
-            errorMessage = "タイトルが長すぎです。";
-            mav.addObject("errorMessage",errorMessage);
-            return mav;
-        }
         List<TodoItem> listname = repository.findByTitleLikeAndDoneFalseOrderByTitleAsc("%"+title+"%");
         mav.addObject("datalist",listname);
         mav.addObject("numberOfdata", listname.size());
@@ -139,57 +150,11 @@ public class HomeController {
     @RequestMapping(value = "/editDone", method = RequestMethod.POST)
     public String editDone(@ModelAttribute TodoItemForm todoItemForm,@RequestParam("id") Long id ,@RequestParam("title") String title,@RequestParam("deadline") String deadline){
         TodoItem item = this.repository.findById(id).get();
-        if(StringUtils.isEmpty(title) && StringUtils.isEmpty(deadline)) {
-            errorMessage = "タイトルまたは期限を記入してください。";
+        errorMessage =  todoService.checkEdit(title, deadline, item);
+        if(!StringUtils.isEmpty(errorMessage)){
             return "forward:edit";
-        }else if(!StringUtils.isEmpty(title) && StringUtils.isEmpty(deadline)){
-            List<TodoItem> checkList = repository.findByTitle(title);
-            if(!CollectionUtils.isEmpty(checkList)){
-                errorMessage = ("同じタイトルがあります。");
-                return "forward:edit";
-            }
-            if(title.length()>30){
-                errorMessage = "タイトルが長すぎです。";
-                return "forward:edit";
-            }
-
-            item.setTitle(title);
-        }else if(StringUtils.isEmpty(title) && !StringUtils.isEmpty(deadline)){
-            DateFormat checkDay = new SimpleDateFormat("yyyy年MM月dd日");
-            checkDay.setLenient(false);
-            try {
-                checkDay.parse(deadline);
-            } catch (ParseException e) {
-                // 日付妥当性NG時の処理を記述
-                errorMessage = ("日付が正しくありません。");
-                return "forward:edit";
-            }
-
-            item.setDeadline(deadline);
-        }else if(!StringUtils.isEmpty(title) && !StringUtils.isEmpty(deadline)){
-            List<TodoItem> checkList = repository.findByTitle(title);
-            if(!CollectionUtils.isEmpty(checkList)){
-                errorMessage = ("同じタイトルがあります。");
-                return "forward:edit";
-            }
-            if(title.length()>30){
-                errorMessage = "タイトルが長すぎです。";
-                return "forward:edit";
-            }
-
-            DateFormat checkDay = new SimpleDateFormat("yyyy年MM月dd日");
-            checkDay.setLenient(false);
-            try {
-                checkDay.parse(deadline);
-            } catch (ParseException e) {
-                // 日付妥当性NG時の処理を記述
-                errorMessage = ("日付が正しくありません。");
-                return "forward:edit";
-            }
-
-            item.setTitle(title);
-            item.setDeadline(deadline);
         }
+
         this.repository.save(item);
         return "redirect:/";
     }

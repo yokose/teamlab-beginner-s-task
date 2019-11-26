@@ -28,6 +28,8 @@ public class TodoItem implements Serializable {
 
     private Boolean done;
 
+    @NotNull
+    @Size(min=11, max=11)
     private String deadline;
 
     private Date create_day;
