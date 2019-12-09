@@ -3,6 +3,7 @@ package teamlab.beginner_task;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -10,19 +11,16 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 
-class myExcepton extends Exception{
-    myExcepton(){
-
-    }
-}
-
 @Service
-public class TodoService {
+public class TodoService{
 
     private final TodoItemRepository repository;
+    public String errorMessage;
     public TodoService(TodoItemRepository repository){
         this.repository  = repository;
     }
+
+
 
     /**
      * errorMessageCheckメソッド
@@ -47,10 +45,10 @@ public class TodoService {
      */
     public String switchDone(Long id, String errorMessage){
         try{
-            TodoItem item = this.repository.findById(id).orElseThrow(myExcepton::new);
+            TodoItem item = this.repository.findById(id).orElseThrow(myException::new);
             item.setDone(!item.getDone());
             this.repository.save(item);
-        }catch (myExcepton e){
+        }catch (myException e){
             errorMessage = "todoがnullです。";
         }
         return errorMessage;
@@ -99,6 +97,42 @@ public class TodoService {
         }
         return null;
     }
+
+    /**
+     * serchTodoByIdMavメソッド
+     * 引数idのtodoを探すメソッド
+     * @param id 探したいtodoのid
+     * @param mav ModelAndView
+     * @return String errorMessage todoが空の時エラーメッセージを返す
+     */
+    public String searchTodoByIdMav(Long id, ModelAndView mav){
+        String errorMessage = null;
+        try{
+            TodoItem item = this.repository.findById(id).orElseThrow(myException::new);
+            mav.addObject("editItem",item);
+        }catch (myException e){
+            errorMessage = "todoがnullです。";
+        }
+        return errorMessage;
+    }
+
+    /**
+     * serchTodoByIdメソッド
+     * 引数idのtodoを探すメソッド
+     * @param id 探したいtodoのid
+     * @return TodoItem item 検索したtodoを返す
+     */
+    public TodoItem searchTodoById(Long id){
+
+        try{
+            TodoItem item = this.repository.findById(id).orElseThrow(myException::new);
+            return item;
+        }catch (myException e){
+            this.errorMessage = "todoがnullです。";
+        }
+        return null;
+    }
+
 
     /**
      * checkEditメソッド

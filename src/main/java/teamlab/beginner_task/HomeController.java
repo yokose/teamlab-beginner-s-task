@@ -31,7 +31,7 @@ import org.springframework.web.servlet.ModelAndView;
  */
 
 @Controller
-public class HomeController {
+class HomeController {
 
     private final TodoItemRepository repository;
     private String errorMessage;
@@ -132,12 +132,16 @@ public class HomeController {
     @RequestMapping(value = "/edit", method = RequestMethod.POST)
     public ModelAndView edit(@ModelAttribute TodoItemForm todoItemForm, @RequestParam("id") Long id ,ModelAndView mav) {
         mav.setViewName("edit");
-        TodoItem item = this.repository.findById(id).get();
-        mav.addObject("editItem",item);
         if(!StringUtils.isEmpty(errorMessage)){
             mav.addObject("errorMessage",errorMessage);
             errorMessage = null;
         }
+        errorMessage = todoService.searchTodoByIdMav(id, mav);
+        if(!StringUtils.isEmpty(errorMessage)){
+            mav.addObject("errorMessage",errorMessage);
+            errorMessage = null;
+        }
+
         return mav;
     }
 
@@ -149,11 +153,12 @@ public class HomeController {
      */
     @RequestMapping(value = "/editDone", method = RequestMethod.POST)
     public String editDone(@ModelAttribute TodoItemForm todoItemForm,@RequestParam("id") Long id ,@RequestParam("title") String title,@RequestParam("deadline") String deadline){
-        TodoItem item = this.repository.findById(id).get();
+        TodoItem item = todoService.searchTodoById(id);
+        errorMessage = todoService.errorMessage;
+        todoService.errorMessage = null;
+        if(!StringUtils.isEmpty(errorMessage)){ return "forward:edit"; }
         errorMessage =  todoService.checkEdit(title, deadline, item);
-        if(!StringUtils.isEmpty(errorMessage)){
-            return "forward:edit";
-        }
+        if(!StringUtils.isEmpty(errorMessage)){ return "forward:edit"; }
 
         this.repository.save(item);
         return "redirect:/";
