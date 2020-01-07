@@ -20,7 +20,32 @@ public class TodoService{
         this.repository  = repository;
     }
 
+    /**
+     * findAllメソッド
+     * repositoryのtodoItemを全てreturn
+     * @return repositoryのtodoItemを全て
+     */
+    public List<TodoItem> findAll(){
+        return this.repository.findAll();
+    }
 
+    /**
+     * repositorySaveメソッド
+     * repositoryにitemを保存
+     * @return void
+     */
+    public void repositorySave(TodoItem item){
+        this.repository.save(item);
+    }
+
+    /**
+     * repositorySaveメソッド
+     * repositoryにitemを保存
+     * @return void
+     */
+    public List<TodoItem> findForSearching(String title){
+        return repository.findByTitleLikeAndDoneFalseOrderByTitleAsc("%"+title+"%");
+    }
 
     /**
      * errorMessageCheckメソッド

@@ -33,11 +33,9 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 class HomeController {
 
-    private final TodoItemRepository repository;
     private String errorMessage;
     private final TodoService todoService;
-    public HomeController(TodoItemRepository repository, TodoService todoService){
-        this.repository  = repository;
+    public HomeController(TodoService todoService){
         this.todoService = todoService;
     }
 
@@ -49,7 +47,7 @@ class HomeController {
     @ModelAttribute
     TodoItemForm setUpTodoItemForm() {
         TodoItemForm todoItemForm = new TodoItemForm();
-        todoItemForm.setTodoItems(this.repository.findAll());
+        todoItemForm.setTodoItems(todoService.findAll());
         todoItemForm.setExistTodo(true);
         List todoItems = todoItemForm.getTodoItems();
         if(todoItems.isEmpty()){todoItemForm.setExistTodo(false);}
@@ -61,7 +59,7 @@ class HomeController {
 
     @RequestMapping
     public String index(@ModelAttribute TodoItemForm todoItemForm) {
-        todoItemForm.setTodoItems(this.repository.findAll());
+        todoItemForm.setTodoItems(todoService.findAll());
         todoItemForm.setExistTodo(true);
 
         errorMessage = todoService.errorMessageCheck(errorMessage, todoItemForm);
@@ -90,7 +88,7 @@ class HomeController {
 
         item.setCreate_day(new Date());
         item.setDone(false);
-        this.repository.save(item);
+        todoService.repositorySave(item);
         return "redirect:/";
     }
 
@@ -114,7 +112,7 @@ class HomeController {
             return mav;
         }
 
-        List<TodoItem> listname = repository.findByTitleLikeAndDoneFalseOrderByTitleAsc("%"+title+"%");
+        List<TodoItem> listname = todoService.findForSearching(title);
         mav.addObject("datalist",listname);
         mav.addObject("numberOfdata", listname.size());
 
@@ -160,7 +158,7 @@ class HomeController {
         errorMessage =  todoService.checkEdit(title, deadline, item);
         if(!StringUtils.isEmpty(errorMessage)){ return "forward:edit"; }
 
-        this.repository.save(item);
+        todoService.repositorySave(item);
         return "redirect:/";
     }
 }
